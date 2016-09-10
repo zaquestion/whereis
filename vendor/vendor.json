@@ -1,0 +1,10 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"heroku": {
+		"install" : [ "./cmd/whereis/" ],
+		"goVersion": "go1.7.1"
+	},
+	"package": [],
+	"rootPath": "github.com/zaquestion/whereis"
+}
