@@ -18,18 +18,123 @@
 	<body>
 		<div id="map"></div>
 		<script>
+			function GoogleMapsControl(controlDiv, map) {
+				var controlUI = document.createElement('div');
+				controlUI.style.backgroundColor = '#fff';
+				controlUI.style.border = '2px solid #fff';
+				controlUI.style.borderRadius = '3px';
+				controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+				controlUI.style.cursor = 'pointer';
+				controlUI.style.marginBottom = '22px';
+				controlUI.style.textAlign = 'center';
+				controlUI.title = 'See in Google Maps';
+				controlDiv.appendChild(controlUI);
+
+				// Set CSS for the control interior.
+				var controlText = document.createElement('div');
+				controlText.style.color = 'rgb(25,25,25)';
+				controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+				controlText.style.fontSize = '16px';
+				controlText.style.lineHeight = '38px';
+				controlText.style.paddingLeft = '5px';
+				controlText.style.paddingRight = '5px';
+				controlText.innerHTML = 'Google Maps';
+				controlUI.appendChild(controlText);
+
+				controlUI.addEventListener('click', function() {
+				    if (navigator.geolocation) {
+				      navigator.geolocation.getCurrentPosition(function(data){
+					if (data.coords) {
+						var end = new google.maps.LatLng({{.Latitude}}, {{.Longitude}})
+					  window.location = 'https://maps.google.com/maps?saddr=' + data.coords.latitude + ',' + data.coords.longitude + '&daddr=' + end.lat() + ',' + end.lng();
+					}
+				      });
+				    }
+				})
+				}
+		      function DirectionsControl(controlDiv, map) {
+				// Set CSS for the control border.
+				var controlUI = document.createElement('div');
+				controlUI.style.backgroundColor = '#fff';
+				controlUI.style.border = '2px solid #fff';
+				controlUI.style.borderRadius = '3px';
+				controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+				controlUI.style.cursor = 'pointer';
+				controlUI.style.marginBottom = '22px';
+				controlUI.style.textAlign = 'center';
+				controlUI.title = 'Click for directions';
+				controlDiv.appendChild(controlUI);
+
+				// Set CSS for the control interior.
+				var controlText = document.createElement('div');
+				controlText.style.color = 'rgb(25,25,25)';
+				controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+				controlText.style.fontSize = '16px';
+				controlText.style.lineHeight = '38px';
+				controlText.style.paddingLeft = '5px';
+				controlText.style.paddingRight = '5px';
+				controlText.innerHTML = 'Directions';
+				controlUI.appendChild(controlText);
+
+				// Setup the click event listeners: simply set the map to Chicago.
+				controlUI.addEventListener('click', function() {
+					if (start.lng == NaN) {
+						alert("User location not shared");
+						return;
+					}
+					  var end = new google.maps.LatLng({{.Latitude}}, {{.Longitude}})
+					  var request = {
+					    origin: start,
+					    destination: end,
+					    travelMode: 'WALKING'
+					  };
+					  directionsService.route(request, function(result, status) {
+					    if (status == 'OK') {
+					      directionsDisplay.setDirections(result);
+					    }
+					  });
+				});
+
+		      }
+
+
 			var map;
+			var start;
+			var directionsDisplay;
+			var directionsService;
 			var myLatLng = {lat: {{.Latitude}}, lng: {{.Longitude}}};
+
 			function initMap() {
+				directionsDisplay = new google.maps.DirectionsRenderer();
+				directionsService = new google.maps.DirectionsService();
 				map = new google.maps.Map(document.getElementById('map'), {
-				center: myLatLng,
-				zoom: 16
-			});
-			var marker = new google.maps.Marker({
-				position: myLatLng,
-				map: map,
-				title: 'Zaq?'
-			});
+					center: myLatLng,
+					zoom: 16
+				});
+				directionsDisplay.setMap(map);
+
+				start = new google.maps.LatLng();
+				navigator.geolocation.getCurrentPosition(function(location) {
+					start = new google.maps.LatLng(location.coords.latitude, location.coords.longitude);
+				});
+				var marker = new google.maps.Marker({
+					position: myLatLng,
+					map: map,
+					title: 'Zaq?'
+				});
+				// Create the DIV to hold the control and call the CenterControl()
+				// constructor passing in this DIV.
+				var directionsDiv = document.createElement('div');
+				var directionsControl = new DirectionsControl(directionsDiv, map);
+
+				var googleMapsDiv = document.createElement('div');
+				var googleMapsControl = new GoogleMapsControl(googleMapsDiv, map);
+
+				directionsControl.index = 1;
+				map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(directionsDiv);
+
+				googleMapsControl.index = 1;
+				map.controls[google.maps.ControlPosition.TOP_CENTER].push(googleMapsDiv);
 			}
 		</script>
 		<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBq0Niyb0Ql8NzTMXWOkBHS7DAIW9xf56Y&callback=initMap"></script>
