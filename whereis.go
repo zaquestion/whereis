@@ -6,11 +6,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 type location struct {
-	Latitude  float64 `json:"latitude"`
-	Longitude float64 `json:"longitude"`
+	Latitude     float64 `json:"latitude"`
+	Longitude    float64 `json:"longitude"`
+	LastUpdated  string  `json:"last_updated"`
+	BatteryLevel int     `json:"battery_remaining"`
 }
 
 func Run() error {
@@ -35,6 +38,22 @@ func Run() error {
 			log.Println(err)
 			return
 		}
+
+		loc, err := time.LoadLocation("America/Los_Angeles")
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		lut, err := time.Parse("2006-01-02T15:04:05.00Z", l.LastUpdated)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		lut = lut.In(loc)
+
+		l.LastUpdated = lut.Format("Mon 03:04PM MST")
 
 		t.Execute(w, l)
 	})
