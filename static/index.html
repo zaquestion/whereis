@@ -38,7 +38,7 @@
 				controlText.style.lineHeight = '20px';
 				controlText.style.paddingLeft = '5px';
 				controlText.style.paddingRight = '5px';
-				controlText.innerHTML = last_updated + "<br>" + 'Battery: ' + battery_level + '%';
+				controlText.innerHTML = last_updated + "<br>" + 'Battery: ' + battery_level + '%<br><br>(253) 486 - 3751';
 				controlUI.appendChild(controlText);
 		      }
 			function GoogleMapsControl(controlDiv, map) {
@@ -58,7 +58,7 @@
 				controlText.style.color = 'rgb(25,25,25)';
 				controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
 				controlText.style.fontSize = '16px';
-				controlText.style.lineHeight = '20px';
+				controlText.style.lineHeight = '38px';
 				controlText.style.paddingLeft = '5px';
 				controlText.style.paddingRight = '5px';
 				controlText.innerHTML = 'Google Maps';
@@ -93,7 +93,7 @@
 				controlText.style.color = 'rgb(25,25,25)';
 				controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
 				controlText.style.fontSize = '16px';
-				controlText.style.lineHeight = '20px';
+				controlText.style.lineHeight = '38px';
 				controlText.style.paddingLeft = '5px';
 				controlText.style.paddingRight = '5px';
 				controlText.innerHTML = 'Directions';
@@ -160,10 +160,10 @@
 				map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(infoDiv);
 
 				googleMapsControl.index = 1;
-				map.controls[google.maps.ControlPosition.TOP_CENTER].push(googleMapsDiv);
+				map.controls[google.maps.ControlPosition.LEFT_CENTER].push(googleMapsDiv);
 
 				directionsControl.index = 2;
-				map.controls[google.maps.ControlPosition.TOP_CENTER].push(directionsDiv);
+				map.controls[google.maps.ControlPosition.LEFT_CENTER].push(directionsDiv);
 			}
 		</script>
 		<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBq0Niyb0Ql8NzTMXWOkBHS7DAIW9xf56Y&callback=initMap"></script>
