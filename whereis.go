@@ -3,11 +3,22 @@ package whereis
 import (
 	"encoding/json"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"time"
 )
+
+var (
+	LOCATION_API string
+	PORT         string
+)
+
+func init() {
+	LOCATION_API = os.Getenv("LOCATION_API")
+	PORT = os.Getenv("PORT")
+}
 
 type location struct {
 	Latitude     float64 `json:"latitude"`
@@ -16,9 +27,27 @@ type location struct {
 	BatteryLevel int     `json:"battery_remaining"`
 }
 
+func GetLocation(w http.ResponseWriter, r *http.Request) {
+	resp, err := http.Get(LOCATION_API)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer resp.Body.Close()
+	text, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	_, err = w.Write(text)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+}
+
 func Run() error {
-	LOCATION_API := os.Getenv("LOCATION_API")
-	PORT := os.Getenv("PORT")
+	http.HandleFunc("/getLocation", GetLocation)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		t, err := template.ParseFiles("./static/index.html")
 		if err != nil {

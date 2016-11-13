@@ -17,6 +17,9 @@
 	</head>
 	<body>
 		<div id="map"></div>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="http://momentjs.com/downloads/moment-with-locales.js"></script>
+		<script src="http://momentjs.com/downloads/moment-timezone-with-data.js"></script>
 		<script>
 		      function InfoControl(controlDiv, map, last_updated, battery_level) {
 				// Set CSS for the control border.
@@ -32,6 +35,7 @@
 
 				// Set CSS for the control interior.
 				var controlText = document.createElement('div');
+				controlText.id = 'infoText'
 				controlText.style.color = 'rgb(25,25,25)';
 				controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
 				controlText.style.fontSize = '16px';
@@ -68,64 +72,39 @@
 				    if (navigator.geolocation) {
 				      navigator.geolocation.getCurrentPosition(function(data){
 					if (data.coords) {
-						var end = new google.maps.LatLng({{.Latitude}}, {{.Longitude}})
-					  window.location = 'https://maps.google.com/maps?saddr=' + data.coords.latitude + ',' + data.coords.longitude + '&daddr=' + end.lat() + ',' + end.lng();
+						var end = new google.maps.LatLng(myLatLng.lat, myLatLng.lng)
+					  	window.location = 'https://maps.google.com/maps?saddr=My+Location&daddr=' + end.lat() + ',' + end.lng();
 					}
 				      });
 				    }
 				})
 				}
-		      function DirectionsControl(controlDiv, map) {
-				// Set CSS for the control border.
-				var controlUI = document.createElement('div');
-				controlUI.style.backgroundColor = '#fff';
-				controlUI.style.border = '2px solid #fff';
-				controlUI.style.borderRadius = '3px';
-				controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
-				controlUI.style.cursor = 'pointer';
-				controlUI.style.marginBottom = '22px';
-				controlUI.style.textAlign = 'center';
-				controlUI.title = 'Click for directions';
-				controlDiv.appendChild(controlUI);
-
-				// Set CSS for the control interior.
-				var controlText = document.createElement('div');
-				controlText.style.color = 'rgb(25,25,25)';
-				controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
-				controlText.style.fontSize = '16px';
-				controlText.style.lineHeight = '38px';
-				controlText.style.paddingLeft = '5px';
-				controlText.style.paddingRight = '5px';
-				controlText.innerHTML = 'Directions';
-				controlUI.appendChild(controlText);
-
-				// Setup the click event listeners: simply set the map to Chicago.
-				controlUI.addEventListener('click', function() {
-					if (start.lng == NaN) {
-						alert("User location not shared");
-						return;
-					}
-					  var end = new google.maps.LatLng({{.Latitude}}, {{.Longitude}})
-					  var request = {
-					    origin: start,
-					    destination: end,
-					    travelMode: 'WALKING'
-					  };
-					  directionsService.route(request, function(result, status) {
-					    if (status == 'OK') {
-					      directionsDisplay.setDirections(result);
-					    }
-					  });
-				});
-
-		      }
-
 
 			var map;
 			var start;
 			var directionsDisplay;
 			var directionsService;
 			var myLatLng = {lat: {{.Latitude}}, lng: {{.Longitude}}};
+
+			function updateLocation() {
+				$.ajax({
+				    url: "/getLocation",
+				    type: "GET",
+				    dataType : "json",
+				})
+				.done(function( json ) {
+					myLatLng = { lat: json['latitude'], lng: json['longitude'] };
+					informat = 'YYYY-MM-DDTHH:mm:ssZ';
+					outformat = 'ddd HH:mmA z';
+					last_updated = moment(json['last_updated'], informat).tz('America/Los_Angeles').format(outformat)
+					battery_level = json['battery_remaining']
+					$('#infoText')[0].innerHTML = last_updated + "<br>" + 'Battery: ' + battery_level + '%<br><br>(253) 486 - 3751'
+				})
+				.fail(function( xhr, status, errorThrown ) {
+				})
+				.always(function( xhr, status ) {
+				});
+			}
 
 			function initMap() {
 				directionsDisplay = new google.maps.DirectionsRenderer();
@@ -136,10 +115,6 @@
 				});
 				directionsDisplay.setMap(map);
 
-				start = new google.maps.LatLng();
-				navigator.geolocation.getCurrentPosition(function(location) {
-					start = new google.maps.LatLng(location.coords.latitude, location.coords.longitude);
-				});
 				var marker = new google.maps.Marker({
 					position: myLatLng,
 					map: map,
@@ -150,9 +125,6 @@
 				var infoDiv = document.createElement('div');
 				var infoControl = new InfoControl(infoDiv, map, {{.LastUpdated}}, {{.BatteryLevel}});
 
-				var directionsDiv = document.createElement('div');
-				var directionsControl = new DirectionsControl(directionsDiv, map);
-
 				var googleMapsDiv = document.createElement('div');
 				var googleMapsControl = new GoogleMapsControl(googleMapsDiv, map);
 
@@ -160,10 +132,9 @@
 				map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(infoDiv);
 
 				googleMapsControl.index = 1;
-				map.controls[google.maps.ControlPosition.LEFT_CENTER].push(googleMapsDiv);
+				map.controls[google.maps.ControlPosition.TOP_CENTER].push(googleMapsDiv);
 
-				directionsControl.index = 2;
-				map.controls[google.maps.ControlPosition.LEFT_CENTER].push(directionsDiv);
+				setInterval(updateLocation, 60000);
 			}
 		</script>
 		<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBq0Niyb0Ql8NzTMXWOkBHS7DAIW9xf56Y&callback=initMap"></script>
