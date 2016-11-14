@@ -48,6 +48,9 @@ func GetLocation(w http.ResponseWriter, r *http.Request) {
 
 func Run() error {
 	http.HandleFunc("/getLocation", GetLocation)
+	http.HandleFunc("/zaq.gif", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/zaq.gif")
+	})
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		t, err := template.ParseFiles("./static/index.html")
 		if err != nil {

@@ -82,6 +82,7 @@
 
 			var map;
 			var start;
+			var marker
 			var directionsDisplay;
 			var directionsService;
 			var myLatLng = {lat: {{.Latitude}}, lng: {{.Longitude}}};
@@ -94,8 +95,10 @@
 				})
 				.done(function( json ) {
 					myLatLng = { lat: json['latitude'], lng: json['longitude'] };
+					marker.setPosition(myLatLng);
+					map.setCenter(myLatLng);
 					informat = 'YYYY-MM-DDTHH:mm:ssZ';
-					outformat = 'ddd HH:mmA z';
+					outformat = 'ddd hh:mmA z';
 					last_updated = moment(json['last_updated'], informat).tz('America/Los_Angeles').format(outformat)
 					battery_level = json['battery_remaining']
 					$('#infoText')[0].innerHTML = last_updated + "<br>" + 'Battery: ' + battery_level + '%<br><br>(253) 486 - 3751'
@@ -105,7 +108,6 @@
 				.always(function( xhr, status ) {
 				});
 			}
-
 			function initMap() {
 				directionsDisplay = new google.maps.DirectionsRenderer();
 				directionsService = new google.maps.DirectionsService();
@@ -114,12 +116,16 @@
 					zoom: 16
 				});
 				directionsDisplay.setMap(map);
-
-				var marker = new google.maps.Marker({
+				var iconZaq = "/zaq.gif"
+				marker = new google.maps.Marker({
 					position: myLatLng,
 					map: map,
+					icon: iconZaq,
+					optimized: false,
 					title: 'Zaq?'
 				});
+
+
 				// Create the DIV to hold the control and call the CenterControl()
 				// constructor passing in this DIV.
 				var infoDiv = document.createElement('div');
@@ -134,7 +140,7 @@
 				googleMapsControl.index = 1;
 				map.controls[google.maps.ControlPosition.TOP_CENTER].push(googleMapsDiv);
 
-				setInterval(updateLocation, 60000);
+				setInterval(updateLocation, 2000);
 			}
 		</script>
 		<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBq0Niyb0Ql8NzTMXWOkBHS7DAIW9xf56Y&callback=initMap"></script>
