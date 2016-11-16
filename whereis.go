@@ -25,6 +25,8 @@ type location struct {
 	Longitude    float64 `json:"longitude"`
 	LastUpdated  string  `json:"last_updated"`
 	BatteryLevel int     `json:"battery_remaining"`
+
+	Destination string
 }
 
 func GetLocation(w http.ResponseWriter, r *http.Request) {
@@ -86,6 +88,8 @@ func Run() error {
 		lut = lut.In(loc)
 
 		l.LastUpdated = lut.Format("Mon 03:04PM MST")
+
+		l.Destination = r.URL.Query().Get("dest")
 
 		t.Execute(w, l)
 	})

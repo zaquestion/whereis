@@ -78,14 +78,19 @@
 				      });
 				    }
 				})
-				}
+			}
 
+			var geocoder;
 			var map;
-			var start;
-			var marker
+			var marker;
 			var directionsDisplay;
 			var directionsService;
 			var myLatLng = {lat: {{.Latitude}}, lng: {{.Longitude}}};
+			var destination = {{ .Destination }}
+			var dests = {
+				"home": "12014 SE 250th PL Kent, WA 98030",
+				"work": "2125 Western Ave N Seattle, WA 98121",
+			}
 
 			function updateLocation() {
 				$.ajax({
@@ -95,20 +100,54 @@
 				})
 				.done(function( json ) {
 					myLatLng = { lat: json['latitude'], lng: json['longitude'] };
-					marker.setPosition(myLatLng);
-					map.setCenter(myLatLng);
 					informat = 'YYYY-MM-DDTHH:mm:ssZ';
 					outformat = 'ddd hh:mmA z';
 					last_updated = moment(json['last_updated'], informat).tz('America/Los_Angeles').format(outformat)
 					battery_level = json['battery_remaining']
-					$('#infoText')[0].innerHTML = last_updated + "<br>" + 'Battery: ' + battery_level + '%<br><br>(253) 486 - 3751'
+
+					if (destination !== "") {
+						end = destination;
+						if (destination.toLowerCase() in dests) {
+							end = dests[destination.toLowerCase()];
+						}
+						var request = {
+						  origin: myLatLng,
+						  destination: end,
+						  travelMode: 'DRIVING'
+						};
+						directionsService.route(request, function(result, status) {
+						  if (status == 'OK') {
+						    directionsDisplay.setDirections(result);
+							duration = result.routes[0].legs[0].duration.text.split(" ")[0];
+							geocodePlaceId(result.geocoded_waypoints[1].place_id);
+						  }});
+					}
+					marker.setPosition(myLatLng);
+					map.setCenter(myLatLng);
+					$('#infoText')[0].innerHTML = last_updated + "<br>" + 'Battery: ' + battery_level + '%<br><br>(253) 486 - 3751';
 				})
 				.fail(function( xhr, status, errorThrown ) {
 				})
 				.always(function( xhr, status ) {
 				});
 			}
+
+		     var marker2;
+		     function geocodePlaceId(place_id, lab) {
+			geocoder.geocode({'placeId': place_id}, function(results, status) {
+			  if (status === 'OK') {
+				marker2 = new google.maps.Marker({
+					position: results[0].geometry.location,
+					map: map,
+					label: lab,
+					title: destination,
+				});
+			  } else {
+				  console.log("FAILED TO FIND PLACE")
+			  }});
+			}
 			function initMap() {
+				geocoder = new google.maps.Geocoder();
 				directionsDisplay = new google.maps.DirectionsRenderer();
 				directionsService = new google.maps.DirectionsService();
 				map = new google.maps.Map(document.getElementById('map'), {
@@ -116,6 +155,7 @@
 					zoom: 16
 				});
 				directionsDisplay.setMap(map);
+				directionsDisplay.setOptions( { suppressMarkers: true } );
 				var iconZaq = "/zaq.gif"
 				marker = new google.maps.Marker({
 					position: myLatLng,
@@ -124,12 +164,29 @@
 					optimized: false,
 					title: 'Zaq?'
 				});
-
-
-				// Create the DIV to hold the control and call the CenterControl()
-				// constructor passing in this DIV.
+				last_updated = {{.LastUpdated}}
+				battery_level = {{.BatteryLevel}}
 				var infoDiv = document.createElement('div');
-				var infoControl = new InfoControl(infoDiv, map, {{.LastUpdated}}, {{.BatteryLevel}});
+				if (destination !== "") {
+					end = destination;
+					if (destination.toLowerCase() in dests) {
+						end = dests[destination.toLowerCase()];
+					}
+					var request = {
+					  origin: myLatLng,
+					  destination: end,
+					  travelMode: 'DRIVING'
+					};
+					directionsService.route(request, function(result, status) {
+					  if (status == 'OK') {
+					    directionsDisplay.setDirections(result);
+						duration = result.routes[0].legs[0].duration.text.split(" ")[0];
+						geocodePlaceId(result.geocoded_waypoints[1].place_id, duration);
+					  }
+					});
+				}
+
+				infoControl = new InfoControl(infoDiv, map, last_updated, battery_level);
 
 				var googleMapsDiv = document.createElement('div');
 				var googleMapsControl = new GoogleMapsControl(googleMapsDiv, map);
@@ -138,11 +195,11 @@
 				map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(infoDiv);
 
 				googleMapsControl.index = 1;
-				map.controls[google.maps.ControlPosition.TOP_CENTER].push(googleMapsDiv);
 
 				setInterval(updateLocation, 60000);
 			}
 		</script>
+		<!-- Everything starts on this script. NOte the callback func in the url -->
 		<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBq0Niyb0Ql8NzTMXWOkBHS7DAIW9xf56Y&callback=initMap"></script>
 	</body>
 </html>
