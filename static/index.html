@@ -118,8 +118,15 @@
 						directionsService.route(request, function(result, status) {
 						  if (status == 'OK') {
 						    directionsDisplay.setDirections(result);
-							duration = result.routes[0].legs[0].duration.text.split(" ")[0];
-							geocodePlaceId(result.geocoded_waypoints[1].place_id);
+							duration = result.routes[0].legs[0].duration.value;
+							duration = duration / 60;
+							if (duration >= 100) {
+								duration = duration / 60;
+								label = parseFloat(duration).toFixed(1);
+							} else{
+								label = parseFloat(duration).toFixed(0);
+							}
+							geocodePlaceId(result.geocoded_waypoints[1].place_id, label);
 						  }});
 					}
 					marker.setPosition(myLatLng);
@@ -180,8 +187,15 @@
 					directionsService.route(request, function(result, status) {
 					  if (status == 'OK') {
 					    directionsDisplay.setDirections(result);
-						duration = result.routes[0].legs[0].duration.text.split(" ")[0];
-						geocodePlaceId(result.geocoded_waypoints[1].place_id, duration);
+						duration = result.routes[0].legs[0].duration.value;
+						duration = duration / 60;
+						if (duration >= 100) {
+							duration = duration / 60;
+							label = parseFloat(duration).toFixed(1);
+						} else{
+							label = parseFloat(duration).toFixed(0);
+						}
+						geocodePlaceId(result.geocoded_waypoints[1].place_id, label);
 					  }
 					});
 				}
