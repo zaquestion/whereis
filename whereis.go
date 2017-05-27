@@ -90,6 +90,9 @@ func Run() error {
 		l.LastUpdated = lut.Format("Mon 03:04PM MST")
 
 		l.Destination = r.URL.Query().Get("dest")
+		if l.Destination == "" {
+			l.Destination = r.URL.Query().Get("to")
+		}
 
 		t.Execute(w, l)
 	})
