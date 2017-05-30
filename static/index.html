@@ -42,7 +42,7 @@
 				controlText.style.lineHeight = '20px';
 				controlText.style.paddingLeft = '5px';
 				controlText.style.paddingRight = '5px';
-				controlText.innerHTML = last_updated + "<br>" + 'Battery: ' + chr_char + battery_level + '%<br><br>(253) 486 - 3751';
+				controlText.innerHTML = last_updated + "<br>" + 'Battery: ' + battery_level + chr_char + '<br><br>(253) 486 - 3751';
 				controlUI.appendChild(controlText);
 		      }
 			function GoogleMapsControl(controlDiv, map) {
@@ -139,7 +139,7 @@
 					if (charging) {
 						chr_char = "⚡"
 					}
-					$('#infoText')[0].innerHTML = last_updated + "<br>" + 'Battery: ' + chr_char + battery_level + '%<br><br>(253) 486 - 3751';
+					$('#infoText')[0].innerHTML = last_updated + "<br>" + 'Battery: ' + battery_level + chr_char + '<br><br>(253) 486 - 3751';
 				})
 				.fail(function( xhr, status, errorThrown ) {
 				})
