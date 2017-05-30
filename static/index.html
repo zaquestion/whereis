@@ -21,7 +21,7 @@
 		<script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
 		<script src="https://momentjs.com/downloads/moment-timezone-with-data.js"></script>
 		<script>
-		      function InfoControl(controlDiv, map, last_updated, battery_level) {
+		      function InfoControl(controlDiv, map, last_updated, battery_level, chr_char) {
 				// Set CSS for the control border.
 				var controlUI = document.createElement('div');
 				controlUI.style.backgroundColor = '#fff';
@@ -42,7 +42,7 @@
 				controlText.style.lineHeight = '20px';
 				controlText.style.paddingLeft = '5px';
 				controlText.style.paddingRight = '5px';
-				controlText.innerHTML = last_updated + "<br>" + 'Battery: ' + battery_level + '%<br><br>(253) 486 - 3751';
+				controlText.innerHTML = last_updated + "<br>" + 'Battery: ' + chr_char + battery_level + '%<br><br>(253) 486 - 3751';
 				controlUI.appendChild(controlText);
 		      }
 			function GoogleMapsControl(controlDiv, map) {
@@ -87,6 +87,7 @@
 			var directionsService;
 			var myLatLng = {lat: {{.Latitude}}, lng: {{.Longitude}}};
 			var destination = {{ .Destination }}
+			var charging = {{ .Charging }}
 			var dests = {
 				"home": "12014 SE 250th PL, Kent, WA 98030",
 				"work": "88 Blanchard, Seattle, WA 98121",
@@ -105,7 +106,8 @@
 					informat = 'YYYY-MM-DDTHH:mm:ssZ';
 					outformat = 'ddd hh:mmA z';
 					last_updated = moment(json['last_updated'], informat).tz('America/Los_Angeles').format(outformat)
-					battery_level = json['battery_remaining']
+					battery_level = json['battery']
+					charging = json['charging']
 
 					if (destination !== "") {
 						end = destination;
@@ -133,7 +135,11 @@
 					}
 					marker.setPosition(myLatLng);
 					map.setCenter(myLatLng);
-					$('#infoText')[0].innerHTML = last_updated + "<br>" + 'Battery: ' + battery_level + '%<br><br>(253) 486 - 3751';
+					chr_char = "";
+					if (charging) {
+						chr_char = "⚡"
+					}
+					$('#infoText')[0].innerHTML = last_updated + "<br>" + 'Battery: ' + chr_char + battery_level + '%<br><br>(253) 486 - 3751';
 				})
 				.fail(function( xhr, status, errorThrown ) {
 				})
@@ -174,7 +180,7 @@
 					title: 'Zaq?'
 				});
 				last_updated = {{.LastUpdated}}
-				battery_level = {{.BatteryLevel}}
+				battery_level = {{.Battery}}
 				var infoDiv = document.createElement('div');
 				if (destination !== "") {
 					end = destination;
@@ -202,7 +208,11 @@
 					});
 				}
 
-				infoControl = new InfoControl(infoDiv, map, last_updated, battery_level);
+				chr_char = "";
+				if (charging) {
+					chr_char = "⚡"
+				}
+				infoControl = new InfoControl(infoDiv, map, last_updated, battery_level, chr_char);
 
 				var googleMapsDiv = document.createElement('div');
 				var googleMapsControl = new GoogleMapsControl(googleMapsDiv, map);

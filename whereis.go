@@ -21,10 +21,11 @@ func init() {
 }
 
 type location struct {
-	Latitude     float64 `json:"latitude"`
-	Longitude    float64 `json:"longitude"`
-	LastUpdated  string  `json:"last_updated"`
-	BatteryLevel int     `json:"battery_remaining"`
+	Latitude    float64 `json:"latitude"`
+	Longitude   float64 `json:"longitude"`
+	LastUpdated string  `json:"last_updated"`
+	Battery     int32   `json:"battery"`
+	Charging    bool    `json:"charging"`
 
 	Destination string
 }
