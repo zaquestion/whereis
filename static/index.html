@@ -21,16 +21,30 @@
 		<script src="https://momentjs.com/downloads/moment-timezone-with-data.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 		<script>
+			var permFollow = false;
 			var map;
 			var geocoder;
 			var directionsDisplay;
 			var directionsService;
 			var users = {}
 			var user = window.location.pathname.slice(1)
-			document.title = user;
 			var dests = {
 				"tune": "88 Blanchard, Seattle, WA 98121",
 				"otaku": "16505 Lake Hills Blvd, Bellevue, WA 98008",
+			}
+			var userDests = {
+				"zaq": {
+					"home": "12014 SE 250th PL, Kent, WA 98030",
+					"work": "88 Blanchard, Seattle, WA 98121",
+					"otaku": "16505 Lake Hills Blvd, Bellevue, WA 98008",
+					"mom": "19856 SE 267th PL, Covington, WA 98042",
+				},
+				"blaise": {
+					"home": "2704 165th Ave NE Bellevue, WA 98008",
+				},
+				"leland": {
+					"home": "845 W Nickerson St, Seattle, WA 98119",
+				}
 			}
 			var destMarker;
 			function geocodePlaceId(place_id, lab) {
@@ -91,12 +105,18 @@
 					if (charging) {
 						chr_char = "⚡"
 					}
-					$('#infoText')[0].innerHTML = last_updated + 'Battery: ' + battery_level + chr_char + "<br><br>Click to Return";
+					bottomText = "<br><br>Click to Return";
+					if (permFollow) {
+						bottomText = "<br><br>" + users[k]["bottom_text"];
+					}
+					$('#infoText')[0].innerHTML = last_updated + 'Battery: ' + battery_level + chr_char + bottomText;
 
 					if (window.location.search !== "") {
 						end = qsGet("dest");
 						if (end.toLowerCase() in dests) {
 							end = dests[end.toLowerCase()];
+						} else if (end.toLowerCase() in userDests[user]) {
+							end = userDests[user][end.toLowerCase()];
 						} else if (Object.keys(users).includes(end)) {
 							lat = users[end]["marker"].position.lat();
 							lng = users[end]["marker"].position.lng();
@@ -195,7 +215,8 @@
 							url: "/zaq",
 							optimized: false,
 							title: 'Zaq?'
-						})
+						}),
+						"bottom_text": "(253) 486 - 3751",
 					},
 					"blaise": {
 						"url": "getLocation?user=blaise",
@@ -206,7 +227,8 @@
 							url: "/blaise",
 							optimized: false,
 							title: 'Blaise'
-						})
+						}),
+						"bottom_text": "(206) 450 - 4244",
 					},
 					"leland": {
 						"url": "http://whereis.lelandbatey.com/api/v1/entry",
@@ -217,16 +239,31 @@
 							url: "/leland",
 							optimized: false,
 							title: 'Leland'
-						})
-					}
+						}),
+						"bottom_text": "",
+					},
 				};
-				for (let k in users) {
-					google.maps.event.addListener(users[k]["marker"], 'click', function() {
-						window.location.href = this.url;
-					});
-				}
+
 
 				keys = Object.keys(users)
+
+				for (let i in keys) {
+					if (window.location.host.includes("whereis."+keys[i])) {
+						user = keys[i];
+						permFollow = true;
+						break;
+					}
+				}
+
+				document.title = user;
+
+				if (!permFollow) {
+					for (let k in users) {
+						google.maps.event.addListener(users[k]["marker"], 'click', function() {
+							window.location.href = this.url;
+						});
+					}
+				}
 
 				if (keys.includes(user)) {
 					geocoder = new google.maps.Geocoder();
@@ -268,14 +305,14 @@
 					map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(infoDiv);
 
 					map.setZoom(14);
-					setTimeout(updateIndividual, 200);
+					setTimeout(updateIndividual, 250);
 					setInterval(updateIndividual, 60000);
 				} else {
 					setTimeout(updateBounds, 500);
 					setInterval(updateBounds, 180000);
 				}
 
-				setTimeout(updateLocation, 100);
+				setTimeout(updateLocation, 50);
 				setTimeout(updateIcons, 200);
 
 				setInterval(updateLocation, 60000);
