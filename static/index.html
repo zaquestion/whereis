@@ -41,9 +41,11 @@
 				},
 				"blaise": {
 					"home": "2704 165th Ave NE Bellevue, WA 98008",
+					"work": "3600 136th Pl SE Bellevue, WA 98006",
 				},
 				"leland": {
 					"home": "845 W Nickerson St, Seattle, WA 98119",
+					"work": "88 Blanchard, Seattle, WA 98121",
 				}
 			}
 			var destMarker;
@@ -297,6 +299,9 @@
 						controlText.style.paddingRight = '5px';
 						controlText.innerHTML = "";
 						controlUI.appendChild(controlText);
+
+						setTimeout(updateIndividual, 250);
+						setInterval(updateIndividual, 60000);
 					}
 					let infoDiv = document.createElement('div');
 					infoDiv.id = "infoDiv";
@@ -305,8 +310,6 @@
 					map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(infoDiv);
 
 					map.setZoom(14);
-					setTimeout(updateIndividual, 250);
-					setInterval(updateIndividual, 60000);
 				} else {
 					setTimeout(updateBounds, 500);
 					setInterval(updateBounds, 180000);
