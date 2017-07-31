@@ -91,7 +91,7 @@
 					if (charging) {
 						chr_char = "⚡"
 					}
-					$('#infoText')[0].innerHTML = last_updated + 'Battery: ' + battery_level + chr_char;
+					$('#infoText')[0].innerHTML = last_updated + 'Battery: ' + battery_level + chr_char + "<br><br>Click to Return";
 
 					if (window.location.search !== "") {
 						end = qsGet("dest");
@@ -245,6 +245,9 @@
 						controlUI.style.marginBottom = '22px';
 						controlUI.style.textAlign = 'center';
 						controlDiv.appendChild(controlUI);
+						controlUI.addEventListener('click', function() {
+							window.location.href = "/"
+						});
 
 						// Set CSS for the control interior.
 						var controlText = document.createElement('div');
@@ -259,6 +262,7 @@
 						controlUI.appendChild(controlText);
 					}
 					let infoDiv = document.createElement('div');
+					infoDiv.id = "infoDiv";
 					infoControl = new InfoControl(infoDiv, map);
 					infoControl.index = 1;
 					map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(infoDiv);
