@@ -30,8 +30,18 @@ type location struct {
 	Destination string
 }
 
+var secrets = map[string]string{
+	"zaq":    os.Getenv("ZAQ_SECRET"),
+	"blaise": os.Getenv("BLAISE_SECRET"),
+}
+
 func GetLocation(w http.ResponseWriter, r *http.Request) {
-	resp, err := http.Get(LOCATION_API)
+	user := r.URL.Query().Get("user")
+	secret, ok := secrets[user]
+	if !ok {
+		log.Println("User:", user, "not found")
+	}
+	resp, err := http.Get(LOCATION_API + "?secret=" + secret)
 	if err != nil {
 		log.Println(err)
 		return
@@ -54,6 +64,12 @@ func Run() error {
 	http.HandleFunc("/zaq.gif", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./static/zaq.gif")
 	})
+	http.HandleFunc("/blaise.gif", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/blaise.gif")
+	})
+	http.HandleFunc("/blaiseandzaq.gif", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/blaiseandzaq.gif")
+	})
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		t, err := template.ParseFiles("./static/index.html")
 		if err != nil {
@@ -62,7 +78,7 @@ func Run() error {
 		}
 
 		var l location
-		resp, err := http.Get(LOCATION_API)
+		resp, err := http.Get(LOCATION_API + "?secret=" + secrets["zaq"])
 		if err != nil {
 			log.Println(err)
 			return

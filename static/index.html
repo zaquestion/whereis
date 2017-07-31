@@ -80,9 +80,13 @@
 				})
 			}
 
+			var iconZaq = "/zaq.gif"
+			var iconBlaise = "/blaise.gif"
+			var iconBlaiseAndZaq = "/blaiseandzaq.gif"
 			var geocoder;
 			var map;
 			var marker;
+			var markerBlaise;
 			var directionsDisplay;
 			var directionsService;
 			var myLatLng = {lat: {{.Latitude}}, lng: {{.Longitude}}};
@@ -97,7 +101,7 @@
 
 			function updateLocation() {
 				$.ajax({
-				    url: "/getLocation",
+				    url: "/getLocation?user=zaq",
 				    type: "GET",
 				    dataType : "json",
 				})
@@ -145,6 +149,31 @@
 				})
 				.always(function( xhr, status ) {
 				});
+
+				// blaise
+				$.ajax({
+				    url: "/getLocation?user=blaise",
+				    type: "GET",
+				    dataType : "json",
+				})
+				.done(function( json ) {
+					blaiseLatLng = { lat: json['latitude'], lng: json['longitude'] };
+					markerBlaise.setPosition(blaiseLatLng);
+					zaqBlaiseDistance = Math.sqrt(Math.pow(marker.getPosition().lat() - markerBlaise.getPosition().lat(), 2) +
+							Math.pow(marker.getPosition().lng() - markerBlaise.getPosition().lng(), 2));
+					if (zaqBlaiseDistance < 0.0005) {
+						markerBlaise.setVisible(false);
+						marker.setIcon(iconBlaiseAndZaq)
+					} else {
+						markerBlaise.setVisible(true);
+						marker.setIcon(iconZaq)
+					}
+				})
+				.fail(function( xhr, status, errorThrown ) {
+				})
+				.always(function( xhr, status ) {
+				});
+
 			}
 
 		     var marker2;
@@ -171,7 +200,6 @@
 				});
 				directionsDisplay.setMap(map);
 				directionsDisplay.setOptions( { suppressMarkers: true } );
-				var iconZaq = "/zaq.gif"
 				marker = new google.maps.Marker({
 					position: myLatLng,
 					map: map,
@@ -214,6 +242,13 @@
 				}
 				infoControl = new InfoControl(infoDiv, map, last_updated, battery_level, chr_char);
 
+				markerBlaise = new google.maps.Marker({
+					map: map,
+					icon: iconBlaise,
+					optimized: false,
+					title: 'Blaise'
+				});
+
 				var googleMapsDiv = document.createElement('div');
 				var googleMapsControl = new GoogleMapsControl(googleMapsDiv, map);
 
@@ -222,6 +257,7 @@
 
 				googleMapsControl.index = 1;
 
+				setTimeout(updateLocation, 100);
 				setInterval(updateLocation, 60000);
 			}
 		</script>
