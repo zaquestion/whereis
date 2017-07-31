@@ -13,93 +13,22 @@
 			height: 100%;
 			}
 		</style>
-		<title>whereis</title>
+		<title>whereis global</title>
 	</head>
 	<body>
 		<div id="map"></div>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-		<script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
-		<script src="https://momentjs.com/downloads/moment-timezone-with-data.js"></script>
 		<script>
-		      function InfoControl(controlDiv, map, last_updated, battery_level, chr_char) {
-				// Set CSS for the control border.
-				var controlUI = document.createElement('div');
-				controlUI.style.backgroundColor = '#fff';
-				controlUI.style.border = '2px solid #fff';
-				controlUI.style.borderRadius = '3px';
-				controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
-				controlUI.style.cursor = 'pointer';
-				controlUI.style.marginBottom = '22px';
-				controlUI.style.textAlign = 'center';
-				controlDiv.appendChild(controlUI);
-
-				// Set CSS for the control interior.
-				var controlText = document.createElement('div');
-				controlText.id = 'infoText'
-				controlText.style.color = 'rgb(25,25,25)';
-				controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
-				controlText.style.fontSize = '16px';
-				controlText.style.lineHeight = '20px';
-				controlText.style.paddingLeft = '5px';
-				controlText.style.paddingRight = '5px';
-				controlText.innerHTML = last_updated + "<br>" + 'Battery: ' + battery_level + chr_char + '<br><br>(253) 486 - 3751';
-				controlUI.appendChild(controlText);
-		      }
-			function GoogleMapsControl(controlDiv, map) {
-				var controlUI = document.createElement('div');
-				controlUI.style.backgroundColor = '#fff';
-				controlUI.style.border = '2px solid #fff';
-				controlUI.style.borderRadius = '3px';
-				controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
-				controlUI.style.cursor = 'pointer';
-				controlUI.style.marginBottom = '22px';
-				controlUI.style.textAlign = 'center';
-				controlUI.title = 'See in Google Maps';
-				controlDiv.appendChild(controlUI);
-
-				// Set CSS for the control interior.
-				var controlText = document.createElement('div');
-				controlText.style.color = 'rgb(25,25,25)';
-				controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
-				controlText.style.fontSize = '16px';
-				controlText.style.lineHeight = '38px';
-				controlText.style.paddingLeft = '5px';
-				controlText.style.paddingRight = '5px';
-				controlText.innerHTML = 'Google Maps';
-				controlUI.appendChild(controlText);
-
-				controlUI.addEventListener('click', function() {
-				    if (navigator.geolocation) {
-				      navigator.geolocation.getCurrentPosition(function(data){
-					if (data.coords) {
-						var end = new google.maps.LatLng(myLatLng.lat, myLatLng.lng)
-					  	window.location = 'https://maps.google.com/maps?saddr=My+Location&daddr=' + end.lat() + ',' + end.lng();
-					}
-				      });
-				    }
-				})
-			}
-
-			var iconZaq = "/zaq.gif"
-			var iconBlaise = "/blaise.gif"
-			var iconBlaiseAndZaq = "/blaiseandzaq.gif"
-			var geocoder;
 			var map;
+			var iconZaq = "/zaq.gif";
+			var iconBlaise = "/blaise.gif";
+			var iconBlaiseAndZaq = "/blaiseandzaq.gif";
+			var iconLeland = "/leland.gif";
 			var marker;
 			var markerBlaise;
-			var directionsDisplay;
-			var directionsService;
-			var myLatLng = {lat: {{.Latitude}}, lng: {{.Longitude}}};
-			var destination = {{ .Destination }}
-			var charging = {{ .Charging }}
-			var dests = {
-				"home": "12014 SE 250th PL, Kent, WA 98030",
-				"work": "88 Blanchard, Seattle, WA 98121",
-				"otaku": "16505 Lake Hills Blvd, Bellevue, WA 98008",
-				"mom": "19856 SE 267th PL, Covington, WA 98042",
-			}
-
+			var markerLeland;
 			function updateLocation() {
+				// zaq?
 				$.ajax({
 				    url: "/getLocation?user=zaq",
 				    type: "GET",
@@ -107,43 +36,7 @@
 				})
 				.done(function( json ) {
 					myLatLng = { lat: json['latitude'], lng: json['longitude'] };
-					informat = 'YYYY-MM-DDTHH:mm:ssZ';
-					outformat = 'ddd hh:mmA z';
-					last_updated = moment(json['last_updated'], informat).tz('America/Los_Angeles').format(outformat)
-					battery_level = json['battery']
-					charging = json['charging']
-
-					if (destination !== "") {
-						end = destination;
-						if (destination.toLowerCase() in dests) {
-							end = dests[destination.toLowerCase()];
-						}
-						var request = {
-						  origin: myLatLng,
-						  destination: end,
-						  travelMode: 'DRIVING'
-						};
-						directionsService.route(request, function(result, status) {
-						  if (status == 'OK') {
-						    directionsDisplay.setDirections(result);
-							duration = result.routes[0].legs[0].duration.value;
-							duration = duration / 60;
-							if (duration >= 100) {
-								duration = duration / 60;
-								label = parseFloat(duration).toFixed(1);
-							} else{
-								label = parseFloat(duration).toFixed(0);
-							}
-							geocodePlaceId(result.geocoded_waypoints[1].place_id, label);
-						  }});
-					}
 					marker.setPosition(myLatLng);
-					map.setCenter(myLatLng);
-					chr_char = "%";
-					if (charging) {
-						chr_char = "⚡"
-					}
-					$('#infoText')[0].innerHTML = last_updated + "<br>" + 'Battery: ' + battery_level + chr_char + '<br><br>(253) 486 - 3751';
 				})
 				.fail(function( xhr, status, errorThrown ) {
 				})
@@ -174,94 +67,58 @@
 				.always(function( xhr, status ) {
 				});
 
+				// leland
+				$.ajax({
+				    url: "http://whereis.lelandbatey.com/api/v1/entry",
+				    type: "GET",
+				    dataType : "json",
+				})
+				.done(function( json ) {
+					lelandLatLng = { lat: parseFloat(json['latitude']), lng: parseFloat(json['longitude']) };
+					markerLeland.setPosition(lelandLatLng);
+				})
+				.fail(function( xhr, status, errorThrown ) {
+				})
+				.always(function( xhr, status ) {
+				});
+
 			}
 
-		     var marker2;
-		     function geocodePlaceId(place_id, lab) {
-			geocoder.geocode({'placeId': place_id}, function(results, status) {
-			  if (status === 'OK') {
-				marker2 = new google.maps.Marker({
-					position: results[0].geometry.location,
-					map: map,
-					label: lab,
-					title: destination,
-				});
-			  } else {
-				  console.log("FAILED TO FIND PLACE")
-			  }});
-			}
 			function initMap() {
-				geocoder = new google.maps.Geocoder();
-				directionsDisplay = new google.maps.DirectionsRenderer();
-				directionsService = new google.maps.DirectionsService();
 				map = new google.maps.Map(document.getElementById('map'), {
-					center: myLatLng,
-					zoom: 16
+					// center: <bounding box of all locations?>,
+					center: {lat: 47.62870076617362, lng: -122.18913557729717},
+					zoom: 11
 				});
-				directionsDisplay.setMap(map);
-				directionsDisplay.setOptions( { suppressMarkers: true } );
 				marker = new google.maps.Marker({
-					position: myLatLng,
 					map: map,
+					position: {lat: 11111, lng: 11111},
 					icon: iconZaq,
 					optimized: false,
 					title: 'Zaq?'
 				});
-				last_updated = {{.LastUpdated}}
-				battery_level = {{.Battery}}
-				var infoDiv = document.createElement('div');
-				if (destination !== "") {
-					end = destination;
-					if (destination.toLowerCase() in dests) {
-						end = dests[destination.toLowerCase()];
-					}
-					var request = {
-					  origin: myLatLng,
-					  destination: end,
-					  travelMode: 'DRIVING'
-					};
-					directionsService.route(request, function(result, status) {
-					  if (status == 'OK') {
-					    directionsDisplay.setDirections(result);
-						duration = result.routes[0].legs[0].duration.value;
-						duration = duration / 60;
-						if (duration >= 100) {
-							duration = duration / 60;
-							label = parseFloat(duration).toFixed(1);
-						} else{
-							label = parseFloat(duration).toFixed(0);
-						}
-						geocodePlaceId(result.geocoded_waypoints[1].place_id, label);
-					  }
-					});
-				}
-
-				chr_char = "%";
-				if (charging) {
-					chr_char = "⚡"
-				}
-				infoControl = new InfoControl(infoDiv, map, last_updated, battery_level, chr_char);
 
 				markerBlaise = new google.maps.Marker({
 					map: map,
+					position: {lat: 11111, lng: 11111},
 					icon: iconBlaise,
 					optimized: false,
 					title: 'Blaise'
 				});
 
-				var googleMapsDiv = document.createElement('div');
-				var googleMapsControl = new GoogleMapsControl(googleMapsDiv, map);
-
-				infoControl.index = 1;
-				map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(infoDiv);
-
-				googleMapsControl.index = 1;
+				markerLeland = new google.maps.Marker({
+					map: map,
+					position: {lat: 11111, lng: 11111},
+					icon: iconLeland,
+					optimized: false,
+					title: 'Leland'
+				});
 
 				setTimeout(updateLocation, 100);
 				setInterval(updateLocation, 60000);
 			}
 		</script>
-		<!-- Everything starts on this script. NOte the callback func in the url -->
+		<!-- Everything starts on this script. Note the callback func in the url -->
 		<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBq0Niyb0Ql8NzTMXWOkBHS7DAIW9xf56Y&callback=initMap"></script>
 	</body>
 </html>

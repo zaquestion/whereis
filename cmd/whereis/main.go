@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/zaquestion/whereis"
+	"github.com/zaquestion/whereis.global"
 	"log"
 )
 

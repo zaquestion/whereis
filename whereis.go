@@ -1,13 +1,10 @@
 package whereis
 
 import (
-	"encoding/json"
-	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"time"
 )
 
 var (
@@ -61,57 +58,6 @@ func GetLocation(w http.ResponseWriter, r *http.Request) {
 
 func Run() error {
 	http.HandleFunc("/getLocation", GetLocation)
-	http.HandleFunc("/zaq.gif", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./static/zaq.gif")
-	})
-	http.HandleFunc("/blaise.gif", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./static/blaise.gif")
-	})
-	http.HandleFunc("/blaiseandzaq.gif", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./static/blaiseandzaq.gif")
-	})
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		t, err := template.ParseFiles("./static/index.html")
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		var l location
-		resp, err := http.Get(LOCATION_API + "?secret=" + secrets["zaq"])
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		d := json.NewDecoder(resp.Body)
-		err = d.Decode(&l)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		loc, err := time.LoadLocation("America/Los_Angeles")
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		lut, err := time.Parse("2006-01-02T15:04:05.00Z", l.LastUpdated)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		lut = lut.In(loc)
-
-		l.LastUpdated = lut.Format("Mon 03:04PM MST")
-
-		l.Destination = r.URL.Query().Get("dest")
-		if l.Destination == "" {
-			l.Destination = r.URL.Query().Get("to")
-		}
-
-		t.Execute(w, l)
-	})
+	http.Handle("/", http.FileServer(http.Dir("static")))
 	return http.ListenAndServe(":"+PORT, nil)
 }
