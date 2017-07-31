@@ -27,7 +27,37 @@
 			var directionsService;
 			var users = {}
 			var user = window.location.pathname.slice(1)
+			document.title = user;
+			var dests = {
+				"tune": "88 Blanchard, Seattle, WA 98121",
+				"otaku": "16505 Lake Hills Blvd, Bellevue, WA 98008",
+			}
 			var destMarker;
+			function geocodePlaceId(place_id, lab) {
+				geocoder.geocode({'placeId': place_id}, function(results, status) {
+					if (status === 'OK') {
+						destMarker = new google.maps.Marker({
+							position: results[0].geometry.location,
+							map: map,
+							label: lab,
+							title: qsGet("dest"),
+						});
+					} else {
+					console.log("FAILED TO FIND PLACE")
+				  }
+				});
+			}
+			function qsGet(variable) {
+				var query = window.location.search.substring(1);
+				var vars = query.split('&');
+				for (var i = 0; i < vars.length; i++) {
+				    var pair = vars[i].split('=');
+				    if (decodeURIComponent(pair[0]) == variable) {
+					return decodeURIComponent(pair[1]);
+				    }
+				}
+				console.log('Query variable %s not found', variable);
+			}
 			function updateIndividual() {
 				k = user
 				$.ajax({
@@ -62,6 +92,41 @@
 						chr_char = "⚡"
 					}
 					$('#infoText')[0].innerHTML = last_updated + 'Battery: ' + battery_level + chr_char;
+
+					if (window.location.search !== "") {
+						end = qsGet("dest");
+						if (end.toLowerCase() in dests) {
+							end = dests[end.toLowerCase()];
+						} else if (Object.keys(users).includes(end)) {
+							lat = users[end]["marker"].position.lat();
+							lng = users[end]["marker"].position.lng();
+							end = {lat: lat, lng: lng};
+						}
+						var request = {
+						  origin: latLng,
+						  destination: end,
+						  travelMode: 'DRIVING'
+						};
+						directionsService.route(request, function(result, status) {
+						  if (status == 'OK') {
+						    directionsDisplay.setDirections(result);
+							duration = result.routes[0].legs[0].duration.value;
+							duration = duration / 60;
+							if (duration >= 100) {
+								duration = duration / 60;
+								label = parseFloat(duration).toFixed(1);
+							} else{
+								label = parseFloat(duration).toFixed(0);
+							}
+							geocodePlaceId(result.geocoded_waypoints[1].place_id, label);
+						  }});
+					} else {
+						minLat = users[k]["marker"].position.lat();
+						minLng = users[k]["marker"].position.lng();
+						maxLat = users[k]["marker"].position.lat();
+						maxLng = users[k]["marker"].position.lng();
+						map.fitBounds({west: minLng - 0.004, north: minLat - 0.002, east: maxLng + 0.004, south: maxLat + 0.002});
+					}
 				})
 				.fail(function( xhr, status, errorThrown ) {
 				})
@@ -164,6 +229,11 @@
 				keys = Object.keys(users)
 
 				if (keys.includes(user)) {
+					geocoder = new google.maps.Geocoder();
+					directionsDisplay = new google.maps.DirectionsRenderer();
+					directionsService = new google.maps.DirectionsService();
+					directionsDisplay.setMap(map);
+					directionsDisplay.setOptions( { suppressMarkers: true } );
 					function InfoControl(controlDiv, map) {
 						// Set CSS for the control border.
 						var controlUI = document.createElement('div');
@@ -193,7 +263,8 @@
 					infoControl.index = 1;
 					map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(infoDiv);
 
-					setTimeout(updateIndividual, 100);
+					map.setZoom(14);
+					setTimeout(updateIndividual, 200);
 					setInterval(updateIndividual, 60000);
 				} else {
 					setTimeout(updateBounds, 500);
