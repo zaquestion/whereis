@@ -58,6 +58,20 @@ func GetLocation(w http.ResponseWriter, r *http.Request) {
 
 func Run() error {
 	http.HandleFunc("/getLocation", GetLocation)
-	http.Handle("/", http.FileServer(http.Dir("static")))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/index.html")
+	})
+	http.HandleFunc("/zaq.gif", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/zaq.gif")
+	})
+	http.HandleFunc("/blaise.gif", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/blaise.gif")
+	})
+	http.HandleFunc("/leland.gif", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/leland.gif")
+	})
+	http.HandleFunc("/blaiseandzaq.gif", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/blaiseandzaq.gif")
+	})
 	return http.ListenAndServe(":"+PORT, nil)
 }

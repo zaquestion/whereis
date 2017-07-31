@@ -17,105 +17,194 @@
 	</head>
 	<body>
 		<div id="map"></div>
+		<script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
+		<script src="https://momentjs.com/downloads/moment-timezone-with-data.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 		<script>
 			var map;
-			var iconZaq = "/zaq.gif";
-			var iconBlaise = "/blaise.gif";
-			var iconBlaiseAndZaq = "/blaiseandzaq.gif";
-			var iconLeland = "/leland.gif";
-			var marker;
-			var markerBlaise;
-			var markerLeland;
-			function updateLocation() {
-				// zaq?
+			var geocoder;
+			var directionsDisplay;
+			var directionsService;
+			var users = {}
+			var user = window.location.pathname.slice(1)
+			var destMarker;
+			function updateIndividual() {
+				k = user
 				$.ajax({
-				    url: "/getLocation?user=zaq",
+				    url: users[k]["url"],
 				    type: "GET",
 				    dataType : "json",
 				})
 				.done(function( json ) {
-					myLatLng = { lat: json['latitude'], lng: json['longitude'] };
-					marker.setPosition(myLatLng);
-				})
-				.fail(function( xhr, status, errorThrown ) {
-				})
-				.always(function( xhr, status ) {
-				});
-
-				// blaise
-				$.ajax({
-				    url: "/getLocation?user=blaise",
-				    type: "GET",
-				    dataType : "json",
-				})
-				.done(function( json ) {
-					blaiseLatLng = { lat: json['latitude'], lng: json['longitude'] };
-					markerBlaise.setPosition(blaiseLatLng);
-					zaqBlaiseDistance = Math.sqrt(Math.pow(marker.getPosition().lat() - markerBlaise.getPosition().lat(), 2) +
-							Math.pow(marker.getPosition().lng() - markerBlaise.getPosition().lng(), 2));
-					if (zaqBlaiseDistance < 0.0005) {
-						markerBlaise.setVisible(false);
-						marker.setIcon(iconBlaiseAndZaq)
-					} else {
-						markerBlaise.setVisible(true);
-						marker.setIcon(iconZaq)
+					latLng = { lat: parseFloat(json['latitude']), lng: parseFloat(json['longitude']) };
+					last_updated = json['last_updated']
+					if (json["time"] != undefined) {
+						last_updated = json['time'];
 					}
-				})
-				.fail(function( xhr, status, errorThrown ) {
-				})
-				.always(function( xhr, status ) {
-				});
 
-				// leland
-				$.ajax({
-				    url: "http://whereis.lelandbatey.com/api/v1/entry",
-				    type: "GET",
-				    dataType : "json",
-				})
-				.done(function( json ) {
-					lelandLatLng = { lat: parseFloat(json['latitude']), lng: parseFloat(json['longitude']) };
-					markerLeland.setPosition(lelandLatLng);
+					informat = 'YYYY-MM-DDTHH:mm:ssZ';
+					outformat = 'ddd hh:mmA z';
+					last_updated = moment(last_updated, informat).tz('America/Los_Angeles').format(outformat);
+					if (last_updated !== undefined) {
+						last_updated = last_updated + "<br>";
+					}
+					if (json['battery'] != undefined) {
+						battery_level = parseFloat(json['battery'])
+					} else {
+						battery_level = parseFloat(json['battlevel'])
+					}
+
+					charging = json['charging']
+					users[k]["marker"].setPosition(latLng);
+					map.setCenter(latLng);
+					chr_char = "%";
+					if (charging) {
+						chr_char = "⚡"
+					}
+					$('#infoText')[0].innerHTML = last_updated + 'Battery: ' + battery_level + chr_char;
 				})
 				.fail(function( xhr, status, errorThrown ) {
 				})
 				.always(function( xhr, status ) {
 				});
+			}
+
+			function updateLocation() {
+				for (let k in users) {
+					if (user == k) {
+						continue
+					}
+					$.ajax({
+					    url: users[k]["url"],
+					    type: "GET",
+					    dataType : "json",
+					})
+					.done(function( json ) {
+						latLng = { lat: parseFloat(json['latitude']), lng: parseFloat(json['longitude']) };
+						users[k]["marker"].setPosition(latLng);
+					})
+					.fail(function( xhr, status, errorThrown ) {
+					})
+					.always(function( xhr, status ) {
+					});
+				}
 
 			}
 
+			function updateBounds() {
+				keys = Object.keys(users);
+				minLat = Math.min(...keys.map(function(k) { return users[k]["marker"].position.lat() }));
+				minLng = Math.min(...keys.map(function(k) { return users[k]["marker"].position.lng() }));
+				maxLat = Math.max(...keys.map(function(k) { return users[k]["marker"].position.lat() }));
+				maxLng = Math.max(...keys.map(function(k) { return users[k]["marker"].position.lng() }));
+				map.fitBounds({west: minLng - 0.004, north: minLat - 0.002, east: maxLng + 0.004, south: maxLat + 0.002});
+			}
+
+			function updateIcons() {
+				zaqBlaiseDistance = Math.sqrt(Math.pow(users["zaq"]["marker"].getPosition().lat() - users["blaise"]["marker"].getPosition().lat(), 2) +
+						Math.pow(users["zaq"]["marker"].getPosition().lng() - users["blaise"]["marker"].getPosition().lng(), 2));
+				if (zaqBlaiseDistance < 0.0005) {
+					users["blaise"]["marker"].setVisible(false);
+					users["zaq"]["marker"].setIcon("./blaiseandzaq.gif")
+				} else {
+					users["blaise"]["marker"].setVisible(true);
+					users["zaq"]["marker"].setIcon("./zaq.gif")
+				}
+			}
+
 			function initMap() {
+
 				map = new google.maps.Map(document.getElementById('map'), {
 					// center: <bounding box of all locations?>,
 					center: {lat: 47.64096227282752, lng: -122.17883589467998},
 					zoom: 11
 				});
-				marker = new google.maps.Marker({
-					map: map,
-					position: {lat: 11111, lng: 11111},
-					icon: iconZaq,
-					optimized: false,
-					title: 'Zaq?'
-				});
 
-				markerBlaise = new google.maps.Marker({
-					map: map,
-					position: {lat: 11111, lng: 11111},
-					icon: iconBlaise,
-					optimized: false,
-					title: 'Blaise'
-				});
+				users = {
+					"zaq": {
+						"url": "getLocation?user=zaq",
+						"marker":  new google.maps.Marker({
+							map: map,
+							position: {lat: 90, lng: 180},
+							icon: "./zaq.gif",
+							url: "/zaq",
+							optimized: false,
+							title: 'Zaq?'
+						})
+					},
+					"blaise": {
+						"url": "getLocation?user=blaise",
+						"marker": new google.maps.Marker({
+							map: map,
+							position: {lat: 89, lng: 179},
+							icon: "./blaise.gif",
+							url: "/blaise",
+							optimized: false,
+							title: 'Blaise'
+						})
+					},
+					"leland": {
+						"url": "http://whereis.lelandbatey.com/api/v1/entry",
+						"marker": new google.maps.Marker({
+							map: map,
+							position: {lat: 90, lng: 180},
+							icon: "./leland.gif",
+							url: "/leland",
+							optimized: false,
+							title: 'Leland'
+						})
+					}
+				};
+				for (let k in users) {
+					google.maps.event.addListener(users[k]["marker"], 'click', function() {
+						window.location.href = this.url;
+					});
+				}
 
-				markerLeland = new google.maps.Marker({
-					map: map,
-					position: {lat: 11111, lng: 11111},
-					icon: iconLeland,
-					optimized: false,
-					title: 'Leland'
-				});
+				keys = Object.keys(users)
+
+				if (keys.includes(user)) {
+					function InfoControl(controlDiv, map) {
+						// Set CSS for the control border.
+						var controlUI = document.createElement('div');
+						controlUI.style.backgroundColor = '#fff';
+						controlUI.style.border = '2px solid #fff';
+						controlUI.style.borderRadius = '3px';
+						controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+						controlUI.style.cursor = 'pointer';
+						controlUI.style.marginBottom = '22px';
+						controlUI.style.textAlign = 'center';
+						controlDiv.appendChild(controlUI);
+
+						// Set CSS for the control interior.
+						var controlText = document.createElement('div');
+						controlText.id = 'infoText'
+						controlText.style.color = 'rgb(25,25,25)';
+						controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+						controlText.style.fontSize = '16px';
+						controlText.style.lineHeight = '20px';
+						controlText.style.paddingLeft = '5px';
+						controlText.style.paddingRight = '5px';
+						controlText.innerHTML = "";
+						controlUI.appendChild(controlText);
+					}
+					let infoDiv = document.createElement('div');
+					infoControl = new InfoControl(infoDiv, map);
+					infoControl.index = 1;
+					map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(infoDiv);
+
+					setTimeout(updateIndividual, 100);
+					setInterval(updateIndividual, 60000);
+				} else {
+					setTimeout(updateBounds, 500);
+					setInterval(updateBounds, 180000);
+				}
 
 				setTimeout(updateLocation, 100);
+				setTimeout(updateIcons, 200);
+
 				setInterval(updateLocation, 60000);
+				setInterval(updateIcons, 180000);
 			}
 		</script>
 		<!-- Everything starts on this script. Note the callback func in the url -->
