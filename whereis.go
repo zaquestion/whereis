@@ -28,8 +28,9 @@ type location struct {
 }
 
 var secrets = map[string]string{
-	"zaq":    os.Getenv("ZAQ_SECRET"),
-	"blaise": os.Getenv("BLAISE_SECRET"),
+	"zaq":     os.Getenv("ZAQ_SECRET"),
+	"blaise":  os.Getenv("BLAISE_SECRET"),
+	"leleand": "",
 }
 
 func GetLocation(w http.ResponseWriter, r *http.Request) {
@@ -38,12 +39,15 @@ func GetLocation(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		log.Println("User:", user, "not found")
 	}
-	resp, err := http.Get(LOCATION_API + "?secret=" + secret)
+	url := LOCATION_API + "?secret=" + secret
+	if user == "leland" {
+		url = "http://whereis.lelandbatey.com/api/v1/entry"
+	}
+	resp, err := http.Get(url)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	defer resp.Body.Close()
 	text, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println(err)

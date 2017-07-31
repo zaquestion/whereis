@@ -8,5 +8,5 @@
 	},
 	"ignore": "test",
 	"package": [],
-	"rootPath": "github.com/zaquestion/whereis.global"
+	"rootPath": "github.com/zaquestion/whereis"
 }
