@@ -250,7 +250,7 @@
 				keys = Object.keys(users)
 
 				for (let i in keys) {
-					if (window.location.host.includes("whereis."+keys[i])) {
+					if (window.location.host.includes(keys[i])) {
 						user = keys[i];
 						permFollow = true;
 						break;
