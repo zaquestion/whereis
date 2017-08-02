@@ -28,9 +28,9 @@ type location struct {
 }
 
 var secrets = map[string]string{
-	"zaq":     os.Getenv("ZAQ_SECRET"),
-	"blaise":  os.Getenv("BLAISE_SECRET"),
-	"leleand": "",
+	"zaq":    os.Getenv("ZAQ_SECRET"),
+	"blaise": os.Getenv("BLAISE_SECRET"),
+	"leland": "",
 }
 
 func GetLocation(w http.ResponseWriter, r *http.Request) {

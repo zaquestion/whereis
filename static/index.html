@@ -36,7 +36,6 @@
 				"zaq": {
 					"home": "12014 SE 250th PL, Kent, WA 98030",
 					"work": "88 Blanchard, Seattle, WA 98121",
-					"otaku": "16505 Lake Hills Blvd, Bellevue, WA 98008",
 					"mom": "19856 SE 267th PL, Covington, WA 98042",
 				},
 				"blaise": {
@@ -89,7 +88,7 @@
 					}
 
 					informat = 'YYYY-MM-DDTHH:mm:ssZ';
-					outformat = 'ddd hh:mmA z';
+					outformat = 'ddd HH:mm z';
 					last_updated = moment(last_updated, informat).tz('America/Los_Angeles').format(outformat);
 					if (last_updated !== undefined) {
 						last_updated = last_updated + "<br>";
@@ -218,7 +217,7 @@
 							optimized: false,
 							title: 'Zaq?'
 						}),
-						"bottom_text": "<br><br>(253) 486 - 3751",
+						"bottom_text": "<br><br><a href=\"tel:+1-253-486-3751\">(253) 486 - 3751</a>",
 					},
 					"blaise": {
 						"url": "getLocation?user=blaise",
@@ -230,7 +229,7 @@
 							optimized: false,
 							title: 'Blaise'
 						}),
-						"bottom_text": "<br><br>(206) 450 - 4244",
+						"bottom_text": "<br><br><a href=\"tel:+1-206-450-4244\">(206) 450 - 4244</a>",
 					},
 					"leland": {
 						"url": "getLocation?user=leland",
@@ -242,7 +241,7 @@
 							optimized: false,
 							title: 'Leland'
 						}),
-						"bottom_text": "",
+						"bottom_text": "<br><br><a href=\"tel:+1-425-522-2839\">(425) 522 - 2839</a>",
 					},
 				};
 
@@ -272,8 +271,8 @@
 					directionsDisplay = new google.maps.DirectionsRenderer();
 					directionsService = new google.maps.DirectionsService();
 					directionsDisplay.setMap(map);
-					directionsDisplay.setOptions( { suppressMarkers: true } );
-					function InfoControl(controlDiv, map) {
+					directionsDisplay.setOptions({suppressMarkers:true});
+					function InfoControl(controlDiv) {
 						// Set CSS for the control border.
 						var controlUI = document.createElement('div');
 						controlUI.style.backgroundColor = '#fff';
@@ -284,13 +283,15 @@
 						controlUI.style.marginBottom = '22px';
 						controlUI.style.textAlign = 'center';
 						controlDiv.appendChild(controlUI);
-						controlUI.addEventListener('click', function() {
-							window.location.href = "/"
-						});
+						if (!permFollow) {
+							controlUI.addEventListener('click', function() {
+								window.location.href = "/"
+							});
+						}
 
 						// Set CSS for the control interior.
 						var controlText = document.createElement('div');
-						controlText.id = 'infoText'
+						controlText.id = 'infoText';
 						controlText.style.color = 'rgb(25,25,25)';
 						controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
 						controlText.style.fontSize = '16px';
@@ -299,30 +300,30 @@
 						controlText.style.paddingRight = '5px';
 						controlText.innerHTML = "";
 						controlUI.appendChild(controlText);
-
-						setTimeout(updateIndividual, 250);
-						setInterval(updateIndividual, 60000);
 					}
 					let infoDiv = document.createElement('div');
 					infoDiv.id = "infoDiv";
-					infoControl = new InfoControl(infoDiv, map);
+					infoControl = new InfoControl(infoDiv);
 					infoControl.index = 1;
 					map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(infoDiv);
-
 					map.setZoom(14);
+
+					window.onload = updateIndividual;
+					setInterval(updateIndividual, 60000);
 				} else {
+					setTimeout(updateBounds, 200);
 					setTimeout(updateBounds, 500);
+					setTimeout(updateBounds, 1000);
 					setInterval(updateBounds, 180000);
 				}
 
-				setTimeout(updateLocation, 50);
-				setTimeout(updateIcons, 200);
+				updateLocation()
+				setTimeout(updateIcons, 250);
 
 				setInterval(updateLocation, 60000);
 				setInterval(updateIcons, 180000);
 			}
 		</script>
-		<!-- Everything starts on this script. Note the callback func in the url -->
 		<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBq0Niyb0Ql8NzTMXWOkBHS7DAIW9xf56Y&callback=initMap"></script>
 	</body>
 </html>
