@@ -1,6 +1,7 @@
 package whereis
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -30,6 +31,7 @@ type location struct {
 var secrets = map[string]string{
 	"zaq":    os.Getenv("ZAQ_SECRET"),
 	"blaise": os.Getenv("BLAISE_SECRET"),
+	"adam":   os.Getenv("ADAM_SECRET"),
 	"leland": "",
 }
 
@@ -37,7 +39,8 @@ func GetLocation(w http.ResponseWriter, r *http.Request) {
 	user := r.URL.Query().Get("user")
 	secret, ok := secrets[user]
 	if !ok {
-		log.Println("User:", user, "not found")
+		notFound := fmt.Sprintf("User: %s not found", user)
+		w.Write([]byte(notFound))
 	}
 	url := LOCATION_API + "?secret=" + secret
 	if user == "leland" {
@@ -70,6 +73,9 @@ func Run() error {
 	})
 	http.HandleFunc("/blaise.gif", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./static/blaise.gif")
+	})
+	http.HandleFunc("/adam.gif", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/adam.gif")
 	})
 	http.HandleFunc("/leland.gif", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./static/leland.gif")

@@ -42,6 +42,10 @@
 					"home": "2704 165th Ave NE Bellevue, WA 98008",
 					"work": "3600 136th Pl SE Bellevue, WA 98006",
 				},
+				"adam": {
+					"home": "845 W Nickerson St, Seattle, WA 98119",
+					"work": "88 Blanchard, Seattle, WA 98121",
+				},
 				"leland": {
 					"home": "845 W Nickerson St, Seattle, WA 98119",
 					"work": "88 Blanchard, Seattle, WA 98121",
@@ -191,11 +195,19 @@
 						Math.pow(users["zaq"]["marker"].getPosition().lng() - users["blaise"]["marker"].getPosition().lng(), 2));
 				if (zaqBlaiseDistance < 0.0005) {
 					users["blaise"]["marker"].setVisible(false);
-					users["zaq"]["marker"].setIcon("./blaiseandzaq.gif")
+					users["zaq"]["marker"].setIcon("./blaiseandzaq.gif");
+					return;
 				} else {
 					users["blaise"]["marker"].setVisible(true);
-					users["zaq"]["marker"].setIcon("./zaq.gif")
 				}
+
+				zaqWorkDistance = Math.sqrt(Math.pow(users["zaq"]["marker"].getPosition().lat() - 47.6122371, 2) +
+						Math.pow(users["zaq"]["marker"].getPosition().lng() - -122.3459269,15, 2));
+				if (zaqWorkDistance < 0.0005) {
+					users["zaq"]["marker"].setIcon("./zaqwork.gif");
+				}
+				users["zaq"]["marker"].setIcon("./zaq.gif");
+
 			}
 
 			function initMap() {
@@ -231,6 +243,18 @@
 						}),
 						"bottom_text": "<br><br><a href=\"tel:+1-206-450-4244\">(206) 450 - 4244</a>",
 					},
+					"adam": {
+						"url": "getLocation?user=adam",
+						"marker": new google.maps.Marker({
+							map: map,
+							position: {lat: 89, lng: 179},
+							icon: "./adam.gif",
+							url: "/adam",
+							optimized: false,
+							title: 'Adam'
+						}),
+						"bottom_text": "<br><br><a href=\"tel:+1-206-450-4244\">(206) 450 - 4244</a>",
+					},
 					"leland": {
 						"url": "getLocation?user=leland",
 						"marker": new google.maps.Marker({
@@ -241,7 +265,7 @@
 							optimized: false,
 							title: 'Leland'
 						}),
-						"bottom_text": "<br><br><a href=\"tel:+1-425-522-2839\">(425) 522 - 2839</a>",
+						"bottom_text": "<br><br><a href=\"tel:+1-4585-484-7669\">(585) 484 - 7669</a>",
 					},
 				};
 
