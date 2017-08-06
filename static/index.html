@@ -182,7 +182,7 @@
 			}
 
 			function updateBounds() {
-				keys = Object.keys(users);
+				let keys = Object.keys(users);
 				minLat = Math.min(...keys.map(function(k) { return users[k]["marker"].position.lat() }));
 				minLng = Math.min(...keys.map(function(k) { return users[k]["marker"].position.lng() }));
 				maxLat = Math.max(...keys.map(function(k) { return users[k]["marker"].position.lat() }));
@@ -210,87 +210,23 @@
 
 			}
 
-			function initMap() {
-
-				map = new google.maps.Map(document.getElementById('map'), {
-					// center: <bounding box of all locations?>,
-					center: {lat: 47.64096227282752, lng: -122.17883589467998},
-					zoom: 11
-				});
-
-				users = {
-					"zaq": {
-						"url": "getLocation?user=zaq",
-						"marker":  new google.maps.Marker({
-							map: map,
-							position: {lat: 90, lng: 180},
-							icon: "./zaq.gif",
-							url: "/zaq",
-							optimized: false,
-							title: 'Zaq?'
-						}),
-						"bottom_text": "<br><br><a href=\"tel:+1-253-486-3751\">(253) 486 - 3751</a>",
-					},
-					"blaise": {
-						"url": "getLocation?user=blaise",
-						"marker": new google.maps.Marker({
-							map: map,
-							position: {lat: 89, lng: 179},
-							icon: "./blaise.gif",
-							url: "/blaise",
-							optimized: false,
-							title: 'Blaise'
-						}),
-						"bottom_text": "<br><br><a href=\"tel:+1-206-450-4244\">(206) 450 - 4244</a>",
-					},
-					"adam": {
-						"url": "getLocation?user=adam",
-						"marker": new google.maps.Marker({
-							map: map,
-							position: {lat: 89, lng: 179},
-							icon: "./adam.gif",
-							url: "/adam",
-							optimized: false,
-							title: 'Adam'
-						}),
-						"bottom_text": "<br><br><a href=\"tel:+1-206-450-4244\">(206) 450 - 4244</a>",
-					},
-					"leland": {
-						"url": "getLocation?user=leland",
-						"marker": new google.maps.Marker({
-							map: map,
-							position: {lat: 90, lng: 180},
-							icon: "./leland.gif",
-							url: "/leland",
-							optimized: false,
-							title: 'Leland'
-						}),
-						"bottom_text": "<br><br><a href=\"tel:+1-4585-484-7669\">(585) 484 - 7669</a>",
-					},
-				};
-
-
-				keys = Object.keys(users)
-
-				for (let i in keys) {
-					if (window.location.host.includes(keys[i])) {
-						user = keys[i];
-						permFollow = true;
-						break;
+			window.onpopstate = function(e){
+				if(e.state){
+					user = e.state.user;
+					var interval_id = setInterval("", 9999);
+					for (var i = 1; i < interval_id; i++) {
+						window.clearInterval(i);
 					}
+					loadUsers(user);
 				}
+			};
 
-				document.title = user;
-
-				if (!permFollow) {
-					for (let k in users) {
-						google.maps.event.addListener(users[k]["marker"], 'click', function() {
-							window.location.href = this.url;
-						});
-					}
+			function loadUsers(_user) {
+				let keys = Object.keys(users)
+				if (map.controls[google.maps.ControlPosition.BOTTOM_CENTER].length) {
+					map.controls[google.maps.ControlPosition.BOTTOM_CENTER].pop()
 				}
-
-				if (keys.includes(user)) {
+				if (keys.includes(_user)) {
 					geocoder = new google.maps.Geocoder();
 					directionsDisplay = new google.maps.DirectionsRenderer();
 					directionsService = new google.maps.DirectionsService();
@@ -309,7 +245,13 @@
 						controlDiv.appendChild(controlUI);
 						if (!permFollow) {
 							controlUI.addEventListener('click', function() {
-								window.location.href = "/"
+								window.history.pushState({"user": "unset"},"", "/");
+								user = "unset";
+								var interval_id = setInterval("", 9999);
+								for (var i = 1; i < interval_id; i++) {
+									window.clearInterval(i);
+								}
+								loadUsers(user);
 							});
 						}
 
@@ -332,8 +274,13 @@
 					map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(infoDiv);
 					map.setZoom(14);
 
-					window.onload = updateIndividual;
+					if (window.onload == null) {
+						window.onload = updateIndividual;
+					} else {
+						updateIndividual();
+					}
 					setInterval(updateIndividual, 60000);
+					document.title = _user;
 				} else {
 					setTimeout(updateBounds, 200);
 					setTimeout(updateBounds, 500);
@@ -341,13 +288,96 @@
 					setInterval(updateBounds, 180000);
 				}
 
-				updateLocation()
+				updateLocation();
 				setTimeout(updateIcons, 200);
 				setTimeout(updateIcons, 500);
 				setTimeout(updateIcons, 1000);
 
 				setInterval(updateLocation, 60000);
 				setInterval(updateIcons, 180000);
+			}
+
+			function initMap() {
+
+				map = new google.maps.Map(document.getElementById('map'), {
+					// center: <bounding box of all locations?>,
+					center: {lat: 47.64096227282752, lng: -122.17883589467998},
+					zoom: 11
+				});
+
+				users = {
+					"zaq": {
+						"url": "getLocation?user=zaq",
+						"marker":  new google.maps.Marker({
+							map: map,
+							position: {lat: 90, lng: 180},
+							icon: "./zaq.gif",
+							optimized: false,
+							title: 'Zaq?'
+						}),
+						"bottom_text": "<br><br><a href=\"tel:+1-253-486-3751\">(253) 486 - 3751</a>",
+					},
+					"blaise": {
+						"url": "getLocation?user=blaise",
+						"marker": new google.maps.Marker({
+							map: map,
+							position: {lat: 89, lng: 179},
+							icon: "./blaise.gif",
+							optimized: false,
+							title: 'Blaise'
+						}),
+						"bottom_text": "<br><br><a href=\"tel:+1-206-450-4244\">(206) 450 - 4244</a>",
+					},
+					"adam": {
+						"url": "getLocation?user=adam",
+						"marker": new google.maps.Marker({
+							map: map,
+							position: {lat: 89, lng: 179},
+							icon: "./adam.gif",
+							optimized: false,
+							title: 'Adam'
+						}),
+						"bottom_text": "<br><br><a href=\"tel:+1-206-450-4244\">(206) 450 - 4244</a>",
+					},
+					"leland": {
+						"url": "getLocation?user=leland",
+						"marker": new google.maps.Marker({
+							map: map,
+							position: {lat: 90, lng: 180},
+							icon: "./leland.gif",
+							optimized: false,
+							title: 'Leland'
+						}),
+						"bottom_text": "<br><br><a href=\"tel:+1-4585-484-7669\">(585) 484 - 7669</a>",
+					},
+				};
+
+
+				let keys = Object.keys(users);
+
+				for (let i in keys) {
+					if (window.location.host.includes(keys[i])) {
+						user = keys[i];
+						permFollow = true;
+						break;
+					}
+				}
+
+				loadUsers(user);
+
+				if (!permFollow) {
+					for (let k in users) {
+						google.maps.event.addListener(users[k]["marker"], 'click', function() {
+							window.history.pushState({"user": k},"", "/"+k);
+							user = k
+							var interval_id = setInterval("", 9999);
+							for (var i = 1; i < interval_id; i++) {
+								window.clearInterval(i);
+							}
+							loadUsers(user);
+						});
+					}
+				}
 			}
 		</script>
 		<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBq0Niyb0Ql8NzTMXWOkBHS7DAIW9xf56Y&callback=initMap"></script>
