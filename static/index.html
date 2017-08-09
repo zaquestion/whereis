@@ -193,7 +193,7 @@
 			function updateIcons() {
 				zaqBlaiseDistance = Math.sqrt(Math.pow(users["zaq"]["marker"].getPosition().lat() - users["blaise"]["marker"].getPosition().lat(), 2) +
 						Math.pow(users["zaq"]["marker"].getPosition().lng() - users["blaise"]["marker"].getPosition().lng(), 2));
-				if (zaqBlaiseDistance < 0.0005) {
+				if (zaqBlaiseDistance < 0.0006) {
 					users["blaise"]["marker"].setVisible(false);
 					users["zaq"]["marker"].setIcon("./blaiseandzaq.gif");
 					return;
@@ -201,9 +201,9 @@
 					users["blaise"]["marker"].setVisible(true);
 				}
 
-				zaqWorkDistance = Math.sqrt(Math.pow(users["zaq"]["marker"].getPosition().lat() - 47.6122371, 2) +
-						Math.pow(users["zaq"]["marker"].getPosition().lng() - -122.3459269,15, 2));
-				if (zaqWorkDistance < 0.0005) {
+				zaqWorkDistance = Math.sqrt(Math.pow(users["zaq"]["marker"].getPosition().lat() - 47.6128297, 2) +
+						Math.pow(users["zaq"]["marker"].getPosition().lng() - -122.3464533, 2));
+				if (zaqWorkDistance < 0.0006) {
 					users["zaq"]["marker"].setIcon("./zaqwork.gif");
 				}
 				users["zaq"]["marker"].setIcon("./zaq.gif");
