@@ -282,6 +282,10 @@
 					setInterval(updateIndividual, 60000);
 					document.title = _user;
 				} else {
+					// stub function to indicate page has
+					// already been loaded when switching to
+					// detail view
+					window.onload = function(){}
 					setTimeout(updateBounds, 200);
 					setTimeout(updateBounds, 500);
 					setTimeout(updateBounds, 1000);
