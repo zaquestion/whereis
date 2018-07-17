@@ -51,6 +51,9 @@ func GetLocation(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
+	if resp.StatusCode == 500 {
+		w.WriteHeader(400)
+	}
 	text, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println(err)

@@ -34,7 +34,7 @@
 			}
 			var userDests = {
 				"zaq": {
-					"home": "12014 SE 250th PL, Kent, WA 98030",
+					"home": "1410 W Raye St, Seattle WA 98119",
 					"work": "88 Blanchard, Seattle, WA 98121",
 					"mom": "19856 SE 267th PL, Covington, WA 98042",
 				},
@@ -174,6 +174,7 @@
 						users[k]["marker"].setPosition(latLng);
 					})
 					.fail(function( xhr, status, errorThrown ) {
+                                            delete users[k];
 					})
 					.always(function( xhr, status ) {
 					});
@@ -201,10 +202,10 @@
 					users["blaise"]["marker"].setVisible(true);
 				}
 
-				zaqWorkDistance = Math.sqrt(Math.pow(users["zaq"]["marker"].getPosition().lat() - 47.6128297, 2) +
-						Math.pow(users["zaq"]["marker"].getPosition().lng() - -122.3464533, 2));
+				zaqWorkDistance = Math.sqrt(Math.pow(users["zaq"]["marker"].getPosition().lat() - 47.6128297, 2) + Math.pow(users["zaq"]["marker"].getPosition().lng() - -122.3464533, 2));
 				if (zaqWorkDistance < 0.0006) {
 					users["zaq"]["marker"].setIcon("./zaqwork.gif");
+					return;
 				}
 				users["zaq"]["marker"].setIcon("./zaq.gif");
 
