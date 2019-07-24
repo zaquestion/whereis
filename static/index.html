@@ -29,26 +29,21 @@
 			var users = {}
 			var user = window.location.pathname.slice(1)
 			var dests = {
+                                "glympse": "1424 11th Ave #300, Seattle, WA 98122",
 				"tune": "88 Blanchard, Seattle, WA 98121",
-				"otaku": "16505 Lake Hills Blvd, Bellevue, WA 98008",
 			}
 			var userDests = {
 				"zaq": {
-					"home": "1410 W Raye St, Seattle WA 98119",
-					"work": "88 Blanchard, Seattle, WA 98121",
+					"home": "3038 31st AVE W, Seattle WA 98199",
+					"work": "1424 11th Ave #300, Seattle, WA 98122",
 					"mom": "19856 SE 267th PL, Covington, WA 98042",
 				},
 				"blaise": {
 					"home": "2704 165th Ave NE Bellevue, WA 98008",
 					"work": "3600 136th Pl SE Bellevue, WA 98006",
 				},
-				"adam": {
-					"home": "845 W Nickerson St, Seattle, WA 98119",
-					"work": "88 Blanchard, Seattle, WA 98121",
-				},
 				"leland": {
-					"home": "845 W Nickerson St, Seattle, WA 98119",
-					"work": "88 Blanchard, Seattle, WA 98121",
+					"work": "1424 11th Ave #300, Seattle, WA 98122",
 				}
 			}
 			var destMarker;
@@ -192,6 +187,9 @@
 			}
 
 			function updateIcons() {
+                                if (!("zaq" in users && "blaise" in users)) {
+                                    return
+                                }
 				zaqBlaiseDistance = Math.sqrt(Math.pow(users["zaq"]["marker"].getPosition().lat() - users["blaise"]["marker"].getPosition().lat(), 2) +
 						Math.pow(users["zaq"]["marker"].getPosition().lng() - users["blaise"]["marker"].getPosition().lng(), 2));
 				if (zaqBlaiseDistance < 0.0006) {
@@ -275,11 +273,6 @@
 					map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(infoDiv);
 					map.setZoom(14);
 
-					if (window.onload == null) {
-						window.onload = updateIndividual;
-					} else {
-						updateIndividual();
-					}
 					setInterval(updateIndividual, 60000);
 					document.title = _user;
 				} else {
@@ -333,17 +326,6 @@
 						}),
 						"bottom_text": "<br><br><a href=\"tel:+1-206-450-4244\">(206) 450 - 4244</a>",
 					},
-					"adam": {
-						"url": "getLocation?user=adam",
-						"marker": new google.maps.Marker({
-							map: map,
-							position: {lat: 89, lng: 179},
-							icon: "./adam.gif",
-							optimized: false,
-							title: 'Adam'
-						}),
-						"bottom_text": "<br><br><a href=\"tel:+1-206-450-4244\">(206) 450 - 4244</a>",
-					},
 					"leland": {
 						"url": "getLocation?user=leland",
 						"marker": new google.maps.Marker({
@@ -353,7 +335,7 @@
 							optimized: false,
 							title: 'Leland'
 						}),
-						"bottom_text": "<br><br><a href=\"tel:+1-4585-484-7669\">(585) 484 - 7669</a>",
+						"bottom_text": "<br><br><a href=\"tel:+1-425-522-2839\">(425) 522 - 2839</a>",
 					},
 				};
 
@@ -369,6 +351,8 @@
 				}
 
 				loadUsers(user);
+                                updateIndividual();
+                                setTimeout(updateIndividual, 1000);
 
 				if (!permFollow) {
 					for (let k in users) {
